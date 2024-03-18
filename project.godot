@@ -1,0 +1,29 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="Narrenschlag's Enigma"
+config/description="Passwords Manager by Maximilian Schecklmann. Encrypts and decrypts passwords using Narrenschlag's encryption methods."
+config/version="1.0.0"
+run/main_scene="res://scene.tscn"
+config/features=PackedStringArray("4.2", "C#", "GL Compatibility")
+boot_splash/bg_color=Color(0.113725, 0.133333, 0.160784, 1)
+boot_splash/image="res://enigma.png"
+config/icon="res://enigma.png"
+
+[dotnet]
+
+project/assembly_name="Password Manager"
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"

@@ -1,0 +1,34 @@
+[gd_scene load_steps=2 format=3 uid="uid://dunrwe21qkgbf"]
+
+[ext_resource type="Script" path="res://Entry.cs" id="1_7nqny"]
+
+[node name="Entry" type="HBoxContainer" node_paths=PackedStringArray("Id", "Password", "CopyButton", "HideButton", "DeleteButton")]
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+script = ExtResource("1_7nqny")
+Id = NodePath("id")
+Password = NodePath("password")
+CopyButton = NodePath("Copy")
+HideButton = NodePath("Hide")
+DeleteButton = NodePath("Delete")
+
+[node name="Copy" type="Button" parent="."]
+layout_mode = 2
+text = "📋"
+
+[node name="id" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Hide" type="Button" parent="."]
+layout_mode = 2
+text = "🦉"
+
+[node name="password" type="LineEdit" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Delete" type="Button" parent="."]
+layout_mode = 2
+text = "🆑"
