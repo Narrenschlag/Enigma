@@ -1,0 +1,3 @@
+[submodule "Cutulu"]
+	path = Cutulu
+	url = https://github.com/Narrenschlag/Cutulu.git
