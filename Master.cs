@@ -172,10 +172,7 @@ namespace Passwords
                 try
                 {
                     var encrypted = IO.ReadString(Master.FilePath);
-                    Debug.Log(encrypted);
-
                     var decrypted = Password.Decrypt(encrypted);
-                    Debug.Log(decrypted);
 
                     return decrypted.json<Entries>();
                 }
