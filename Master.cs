@@ -152,8 +152,8 @@ namespace Passwords
         public static void Set(string rawPassword) => IO.Write(HashedPassword = rawPassword.HashPassword(), Master.PasswordPath, IO.FileType.Binary);
         public static bool Check(string rawPassword) => HashedPassword.Equals(rawPassword.HashPassword());
 
-        public static string Encrypt(string input) => input.EncryptString(RawPassword).EncryptString(HashedPassword);
-        public static string Decrypt(string input) => input.DecryptString(HashedPassword).DecryptString(RawPassword);
+        public static string Encrypt(string input) => input.EncryptString(RawPassword, 7).EncryptString(RawPassword);
+        public static string Decrypt(string input) => input.DecryptString(RawPassword).DecryptString(RawPassword, 7);
     }
 
     public class Entries
