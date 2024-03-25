@@ -5,7 +5,7 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_devno"]
 
-[node name="Master" type="Node" node_paths=PackedStringArray("LoginPassword", "LoginButton", "SetupPassword", "SetupHideButton", "SetupPasswordConfirm", "SetupButton", "EntryPanel", "EntryId", "EntryPassword", "EntryAddButton", "EntryRoot")]
+[node name="Master" type="Node" node_paths=PackedStringArray("LoginPassword", "LoginButton", "SetupPassword", "SetupHideButton", "SetupPasswordConfirm", "SetupButton", "BackupPaste", "BackupLoad", "EntryPanel", "EntryId", "EntryPassword", "EntryAddButton", "EntryRoot")]
 script = ExtResource("1_qgy8t")
 LoginPassword = NodePath("Control/Login/LineEdit")
 LoginButton = NodePath("Control/Login/Button")
@@ -13,10 +13,12 @@ SetupPassword = NodePath("Control/FirstPassword/HBoxContainer/LineEdit")
 SetupHideButton = NodePath("Control/FirstPassword/HBoxContainer/Hide")
 SetupPasswordConfirm = NodePath("Control/FirstPassword/Confirm")
 SetupButton = NodePath("Control/FirstPassword/Button")
+BackupPaste = NodePath("Control/MarginContainer/Unlocked/Input/Backup Paste")
+BackupLoad = NodePath("Control/MarginContainer/Unlocked/Input/Backup Load")
 EntryPanel = NodePath("Control/MarginContainer")
 EntryId = NodePath("Control/MarginContainer/Unlocked/Input/id")
 EntryPassword = NodePath("Control/MarginContainer/Unlocked/Input/password")
-EntryAddButton = NodePath("Control/MarginContainer/Unlocked/Input/Button")
+EntryAddButton = NodePath("Control/MarginContainer/Unlocked/Input/Add")
 EntryRoot = NodePath("Control/MarginContainer/Unlocked/PanelContainer/Root")
 EntryPrefab = ExtResource("1_xmw1a")
 
@@ -113,6 +115,18 @@ layout_mode = 2
 [node name="Input" type="HBoxContainer" parent="Control/MarginContainer/Unlocked"]
 layout_mode = 2
 
+[node name="Backup Load" type="Button" parent="Control/MarginContainer/Unlocked/Input"]
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Create a raw Backup and paste data to clipboard"
+text = "💾"
+
+[node name="Backup Paste" type="Button" parent="Control/MarginContainer/Unlocked/Input"]
+layout_mode = 2
+size_flags_vertical = 4
+tooltip_text = "Backup insert data from clipboard"
+text = "💽"
+
 [node name="id" type="LineEdit" parent="Control/MarginContainer/Unlocked/Input"]
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
@@ -126,7 +140,7 @@ size_flags_horizontal = 3
 placeholder_text = "Enter Password"
 secret = true
 
-[node name="Button" type="Button" parent="Control/MarginContainer/Unlocked/Input"]
+[node name="Add" type="Button" parent="Control/MarginContainer/Unlocked/Input"]
 layout_mode = 2
 size_flags_vertical = 4
 text = " + "

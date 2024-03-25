@@ -17,6 +17,8 @@ namespace Passwords
         [Export] public Button SetupButton;
 
         [ExportGroup("Entries")]
+        [Export] public Button BackupPaste;
+        [Export] public Button BackupLoad;
         [Export] public Node EntryPanel;
         [Export] public LineEdit EntryId;
         [Export] public LineEdit EntryPassword;
@@ -121,6 +123,8 @@ namespace Passwords
         private void OnUnlock()
         {
             EntryAddButton.ConnectButton(this, "OnAddEntry");
+            BackupPaste.ConnectButton(this, "OnBackupPaste");
+            BackupLoad.ConnectButton(this, "OnBackupLoad");
 
             UpdateEntries();
         }
@@ -136,6 +140,9 @@ namespace Passwords
                 entry.OnSetup(i, ref Entries.EntryIndex[i]);
             }
         }
+
+        private void OnBackupPaste() => Entries.PasteBackup();
+        private void OnBackupLoad() => Entries.CopyBackup();
     }
 
     public static class Password
@@ -152,8 +159,8 @@ namespace Passwords
         public static void Set(string rawPassword) => IO.Write(HashedPassword = rawPassword.HashPassword(), Master.PasswordPath, IO.FileType.Binary);
         public static bool Check(string rawPassword) => HashedPassword.Equals(rawPassword.HashPassword());
 
-        public static string Encrypt(string input) => input.EncryptString(RawPassword, 7).EncryptString(RawPassword);
-        public static string Decrypt(string input) => input.DecryptString(RawPassword).DecryptString(RawPassword, 7);
+        public static string Encrypt(string input) => input.EncryptString(RawPassword, 3).EncryptString(RawPassword);
+        public static string Decrypt(string input) => input.DecryptString(RawPassword).DecryptString(RawPassword, 3);
     }
 
     public class Entries
@@ -161,6 +168,7 @@ namespace Passwords
         public Entry[] EntryIndex { get; set; }
 
         public Entries() => EntryIndex = new Entry[1] { new("sampleId", "samplePassword") };
+        private Entries(int length) => EntryIndex = new Entry[length];
 
         /// <summary>
         /// Read entries from file system
@@ -195,6 +203,25 @@ namespace Passwords
             string encrypted = Password.Encrypt(json);
 
             IO.WriteString(Master.FilePath, encrypted);
+        }
+
+        public void CopyBackup() => Application.Clipboard = EntryIndex.json();
+
+        public void PasteBackup()
+        {
+            var paste = Application.Clipboard.json<Entry[]>();
+            if (paste == null) return;
+
+            var backup = EntryIndex;
+            EntryIndex = new Entry[backup.Length + paste.Length];
+
+            for (int i = 0; i < EntryIndex.Length; i++)
+            {
+                EntryIndex[i] = i >= backup.Length ? paste[i - backup.Length] : backup[i];
+            }
+
+            Write();
+            Master.UpdateEntries();
         }
 
         public struct Entry
