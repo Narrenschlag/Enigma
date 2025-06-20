@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dunrwe21qkgbf"]
 
-[ext_resource type="Script" path="res://Entry.cs" id="1_7nqny"]
+[ext_resource type="Script" uid="uid://fgi3dxpw7max" path="res://Entry.cs" id="1_7nqny"]
 
 [node name="Entry" type="HBoxContainer" node_paths=PackedStringArray("Id", "Password", "CopyButton", "HideButton", "DeleteButton")]
 anchors_preset = 10

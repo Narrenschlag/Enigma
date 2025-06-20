@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cwr0u58h611dy"]
 
-[ext_resource type="Script" path="res://Master.cs" id="1_qgy8t"]
+[ext_resource type="Script" uid="uid://d1s0r0rimb385" path="res://Master.cs" id="1_qgy8t"]
 [ext_resource type="PackedScene" uid="uid://dunrwe21qkgbf" path="res://entry.tscn" id="1_xmw1a"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_devno"]
