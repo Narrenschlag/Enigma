@@ -1,8 +1,8 @@
-using Cutulu;
-using Godot;
-
 namespace Passwords
 {
+    using Cutulu.Core;
+    using Godot;
+
     public partial class Entry : HBoxContainer
     {
         [Export] public LineEdit Id { get; set; }
@@ -21,15 +21,15 @@ namespace Passwords
             Id.Text = ogId = entry.Id;
             Password.Text = ogPassword = entry.Password;
 
-            Id.Connect("focus_exited", this, "OnUpdate");
-            Id.Connect("text_submitted", this, "OnUpdate");
+            Id.Connect("focus_exited", new(this, "OnUpdate"));
+            Id.Connect("text_submitted", new(this, "OnUpdate"));
 
-            Password.Connect("focus_exited", this, "OnUpdate");
-            Password.Connect("text_submitted", this, "OnUpdate");
+            Password.Connect("focus_exited", new(this, "OnUpdate"));
+            Password.Connect("text_submitted", new(this, "OnUpdate"));
 
-            CopyButton.ConnectButton(this, "OnCopy");
-            HideButton.ConnectButton(this, "OnHide");
-            DeleteButton.ConnectButton(this, "OnDelete");
+            CopyButton.Connect("pressed", new(this, "OnCopy"));
+            HideButton.Connect("pressed", new(this, "OnHide"));
+            DeleteButton.Connect("pressed", new(this, "OnDelete"));
 
             Password.Secret = true;
         }

@@ -1,9 +1,9 @@
-using System;
-using Cutulu;
-using Godot;
-
 namespace Passwords
 {
+    using Cutulu.Core;
+    using System;
+    using Godot;
+
     public partial class Master : Node
     {
         [ExportGroup("Login")]
@@ -26,8 +26,8 @@ namespace Passwords
         [Export] public Node EntryRoot;
         [Export] public PackedScene EntryPrefab;
 
-        public const string PasswordPath = $"{IO.USER_PATH}sesam.key";
-        public const string FilePath = $"{IO.USER_PATH}sesam.file";
+        public const string PasswordPath = $"{CONST.USER_PATH}sesam.key";
+        public const string FilePath = $"{CONST.USER_PATH}sesam.file";
 
         public static Entries Entries { get; set; }
         private static Master Singleton;
@@ -37,9 +37,9 @@ namespace Passwords
             Singleton = this;
 
             // Login
-            if (PasswordPath.Exists())
+            if (PasswordPath.PathExists())
             {
-                LoginButton.ConnectButton(this, "OnLogin");
+                LoginButton.Connect("pressed", new Callable(this, "OnLogin"));
 
                 Enable(1);
                 LoginPassword.GrabFocus();
@@ -48,8 +48,8 @@ namespace Passwords
             // Setup
             else
             {
-                SetupHideButton.ConnectButton(this, "OnSetupHide");
-                SetupButton.ConnectButton(this, "OnSetup");
+                SetupHideButton.Connect("pressed", new(this, "OnSetupHide"));
+                SetupButton.Connect("pressed", new(this, "OnSetup"));
 
                 Enable(0);
                 SetupPassword.GrabFocus();
@@ -122,9 +122,9 @@ namespace Passwords
 
         private void OnUnlock()
         {
-            EntryAddButton.ConnectButton(this, "OnAddEntry");
-            BackupPaste.ConnectButton(this, "OnBackupPaste");
-            BackupLoad.ConnectButton(this, "OnBackupLoad");
+            EntryAddButton.Connect("pressed", new(this, "OnAddEntry"));
+            BackupPaste.Connect("pressed", new(this, "OnBackupPaste"));
+            BackupLoad.Connect("pressed", new(this, "OnBackupLoad"));
 
             UpdateEntries();
         }
@@ -153,10 +153,10 @@ namespace Passwords
         private static string HashedPassword
         {
             set => hashedPassword = value;
-            get => hashedPassword.IsEmpty() ? hashedPassword = IO.Read<string>(Master.PasswordPath, IO.FileType.Binary) : hashedPassword;
+            get => hashedPassword.IsEmpty() ? hashedPassword = new File(Master.PasswordPath).Read().TryDecode(out string hp) ? hp : default : hashedPassword;
         }
 
-        public static void Set(string rawPassword) => IO.Write(HashedPassword = rawPassword.HashPassword(), Master.PasswordPath, IO.FileType.Binary);
+        public static void Set(string rawPassword) => new File(Master.PasswordPath).Write((HashedPassword = rawPassword.HashPassword()).Encode());
         public static bool Check(string rawPassword) => HashedPassword.Equals(rawPassword.HashPassword());
 
         public static string Encrypt(string input) => input.EncryptString(RawPassword, 3).EncryptString(RawPassword);
@@ -179,7 +179,7 @@ namespace Passwords
             {
                 try
                 {
-                    var encrypted = IO.ReadString(Master.FilePath);
+                    var encrypted = new File(Master.FilePath).ReadString();
                     var decrypted = Password.Decrypt(encrypted);
 
                     return decrypted.json<Entries>();
@@ -202,7 +202,7 @@ namespace Passwords
 
             string encrypted = Password.Encrypt(json);
 
-            IO.WriteString(Master.FilePath, encrypted);
+            new File(Master.FilePath).WriteString(encrypted);
         }
 
         public void CopyBackup() => Application.Clipboard = EntryIndex.json();
