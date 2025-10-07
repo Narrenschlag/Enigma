@@ -52,10 +52,10 @@ public partial class Login : VBoxContainer
         else if (NewPassword.Text != ConfirmPassword.Text) PostFeedback("Passwords have to match.");
         else
         {
-            if (Master.WriteKey($"res://Docs/new_key.key", SmartEncryption.GenerateKey(), NewPassword.Text) == false)
+            if (Master.WriteKey($"user://bin/new_key.key", SmartEncryption.GenerateKey(), NewPassword.Text) == false)
                 PostFeedback("Failed to create new key file.");
 
-            else if (Master.OpenEntries(new(), $"res://Docs/new_entries.key") == false)
+            else if (Master.OpenEntries(new(), $"user://bin/new_entries.key") == false)
                 PostFeedback("Failed to create entry file.");
 
             else

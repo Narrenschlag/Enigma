@@ -12,7 +12,7 @@ config_version=5
 
 config/name="Narrenschlag's Enigma"
 config/description="Passwords Manager by Maximilian Schecklmann. Encrypts and decrypts passwords using Narrenschlag's encryption methods."
-config/version="1.0.0"
+config/version="1.2.1"
 run/main_scene="res://scene.tscn"
 config/features=PackedStringArray("4.5", "C#", "GL Compatibility")
 boot_splash/bg_color=Color(0.113725, 0.133333, 0.160784, 1)

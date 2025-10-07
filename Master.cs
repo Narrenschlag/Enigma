@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Cutulu.Encryption;
 using Cutulu.Core;
 using Godot;
+using System;
 
 public partial class Master : Node
 {
@@ -48,55 +49,64 @@ public partial class Master : Node
 
     private static byte[] FixPassword(string password)
     {
-        var buffer = new List<byte>(password.Encode());
+        var bytes = new List<byte>(password.Encode());
 
-        var random = Noisef.GenerateNoise(buffer.ToArray().Decode<int>(), default);
-        var steps = random.Value(buffer[^1]);
+        var random = Noisef.GenerateNoise(bytes.ToArray().Decode<int>(), default);
+        var steps = random.Value(bytes[^1]);
         byte step = 0;
 
-        while (buffer.Count < SmartEncryption.KeySize)
+        while (bytes.Count < SmartEncryption.KeySize)
         {
             var val = random.Value(
-                buffer[(++step + buffer[^2]) % buffer.Count] * 603.7f,
-                buffer[(++step + buffer[3]) % buffer.Count] * 0.2f,
-                buffer[(++step + buffer[^3]) % buffer.Count] * Mathf.Pi
+                bytes[(++step + bytes[^2]) % bytes.Count] * 603.7f,
+                bytes[(++step + bytes[3]) % bytes.Count] * 0.2f,
+                bytes[(++step + bytes[^3]) % bytes.Count] * Mathf.Pi
             );
 
             if ((steps += steps * random.Value(++step)) % 2 == 0)
                 val *= random.Value(steps);
 
-            if (buffer[++step % buffer.Count] % 2.0f == 0) buffer.Insert(Mathf.RoundToInt(steps * 10) % (buffer.Count - 4), (byte)Mathf.RoundToInt(val * 255));
-            else buffer.Add((byte)Mathf.RoundToInt(val * 255));
+            if (bytes[++step % bytes.Count] % 2.0f == 0) bytes.Insert(Mathf.RoundToInt(steps * 10) % (bytes.Count - 4), (byte)Mathf.RoundToInt(val * 255));
+            else bytes.Add((byte)Mathf.RoundToInt(val * 255));
         }
 
-        return [.. buffer];
-    }
+        bytes.Reverse(); // Just to mess with you a little longer :)
 
-    public static bool LoadKey(File file, string password)
-    {
-        if (file.IsNull() || file.Exists() == false || password.IsEmpty()) return false;
-
-        ENCRYPTED_KEY = file.Read();
-
-        try
-        {
-            var priv = ENCRYPTED_KEY.Decrypt(HIDDEN_KEY = FixPassword(password));
-        }
-
-        catch
-        {
-            return false;
-        }
-
-        return true;
+        return bytes.ToArray()[0..SmartEncryption.KeySize];
     }
 
     public static bool WriteKey(string path, byte[] privateKey, string password)
     {
         if (privateKey.IsEmpty()) return false;
 
-        new File(path).Write(ENCRYPTED_KEY = privateKey.Encrypt(FixPassword(password)));
+        HIDDEN_KEY = privateKey;
+        var ROSETTA = FixPassword(password);
+        ENCRYPTED_KEY = privateKey.Encrypt(ROSETTA);
+        //Debug.LogR($"Saving key file: {path}\n[color=gold][b]Password: {password}\nROSETTA: {string.Join("", ROSETTA)}\nHIDDEN_KEY: {string.Join("", HIDDEN_KEY)}\nENCRYPTED_KEY: {string.Join("", ENCRYPTED_KEY)}");
+
+        new File(path).Write(ENCRYPTED_KEY);
         return LoadKey(new File(path), password);
+    }
+
+    public static bool LoadKey(File file, string password)
+    {
+        if (file.IsNull() || file.Exists() == false || password.IsEmpty()) return false;
+
+        try
+        {
+            ENCRYPTED_KEY = file.Read();
+            var ROSETTA = FixPassword(password);
+            HIDDEN_KEY = ENCRYPTED_KEY.Decrypt(ROSETTA);
+            //Debug.LogR($"Loading key file: {file.SystemPath}\n[color=gold][b]Password: {password}\nROSETTA: {string.Join("", ROSETTA)}\nHIDDEN_KEY: {string.Join("", HIDDEN_KEY)}\nENCRYPTED_KEY: {string.Join("", ENCRYPTED_KEY)}");
+        }
+
+        catch (Exception ex)
+        {
+            Debug.LogError($"Failed to decrypt key file: {file.SystemPath}: {ex.Message}");
+            return false;
+        }
+
+        return true;
     }
 
     public static bool UnlockEntries(File file)

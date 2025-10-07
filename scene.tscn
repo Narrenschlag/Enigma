@@ -78,9 +78,15 @@ FileNameFormat = "🗝️ {path}"
 [node name="OpenPassword" parent="Control/Login" instance=ExtResource("5_y2354")]
 layout_mode = 2
 
+[node name="LineEdit" parent="Control/Login/OpenPassword" index="0"]
+focus_neighbor_bottom = NodePath("../../Unlock")
+focus_next = NodePath("../../Unlock")
+
 [node name="Unlock" type="Button" parent="Control/Login"]
 layout_mode = 2
 size_flags_vertical = 4
+focus_neighbor_top = NodePath("../OpenPassword/LineEdit")
+focus_previous = NodePath("../OpenPassword/LineEdit")
 text = "🌊 Unlock"
 
 [node name="RichTextLabel" type="RichTextLabel" parent="Control/Login"]
@@ -119,9 +125,16 @@ autowrap_mode = 0
 [node name="NewPassword" parent="Control/Login" instance=ExtResource("5_y2354")]
 layout_mode = 2
 
+[node name="LineEdit" parent="Control/Login/NewPassword" index="0"]
+focus_next = NodePath("../../Confirm/LineEdit")
+
 [node name="Confirm" parent="Control/Login" instance=ExtResource("5_y2354")]
 layout_mode = 2
 PlaceholderText = "Confirm password"
+
+[node name="LineEdit" parent="Control/Login/Confirm" index="0"]
+focus_next = NodePath("../../Create")
+focus_previous = NodePath("../../NewPassword/LineEdit")
 
 [node name="Create" type="Button" parent="Control/Login"]
 layout_mode = 2
@@ -412,3 +425,7 @@ DeleteButton = NodePath("../HBoxContainer2/Delete")
 [connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Backup Load" to="." method="OnBackupLoad"]
 [connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Backup Paste" to="." method="OnBackupPaste"]
 [connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Add" to="." method="OnAddEntry"]
+
+[editable path="Control/Login/OpenPassword"]
+[editable path="Control/Login/NewPassword"]
+[editable path="Control/Login/Confirm"]
