@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://d1s0r0rimb385" path="res://Master.cs" id="1_qgy8t"]
 [ext_resource type="PackedScene" uid="uid://dunrwe21qkgbf" path="res://entry.tscn" id="1_xmw1a"]
-[ext_resource type="PackedScene" uid="uid://b415bvnc5tfik" path="res://file_drop.tscn" id="3_3253y"]
+[ext_resource type="PackedScene" uid="uid://b415bvnc5tfik" path="res://Cutulu/UI/FileDrop/file_drop.tscn" id="3_3253y"]
 [ext_resource type="Script" uid="uid://bjms30kdwruqw" path="res://Scripts/Login.cs" id="3_m7jmp"]
 [ext_resource type="PackedScene" uid="uid://d2in5sq8vysyq" path="res://hidden_input.tscn" id="5_y2354"]
 
