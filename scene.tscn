@@ -1,24 +1,20 @@
-[gd_scene load_steps=4 format=3 uid="uid://cwr0u58h611dy"]
+[gd_scene load_steps=7 format=3 uid="uid://cwr0u58h611dy"]
 
 [ext_resource type="Script" uid="uid://d1s0r0rimb385" path="res://Master.cs" id="1_qgy8t"]
 [ext_resource type="PackedScene" uid="uid://dunrwe21qkgbf" path="res://entry.tscn" id="1_xmw1a"]
+[ext_resource type="PackedScene" uid="uid://b415bvnc5tfik" path="res://file_drop.tscn" id="3_3253y"]
+[ext_resource type="Script" uid="uid://bjms30kdwruqw" path="res://Scripts/Login.cs" id="3_m7jmp"]
+[ext_resource type="PackedScene" uid="uid://d2in5sq8vysyq" path="res://hidden_input.tscn" id="5_y2354"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_devno"]
 
-[node name="Master" type="Node" node_paths=PackedStringArray("LoginPassword", "LoginButton", "SetupPassword", "SetupHideButton", "SetupPasswordConfirm", "SetupButton", "BackupPaste", "BackupLoad", "EntryPanel", "EntryId", "EntryPassword", "EntryAddButton", "EntryRoot")]
+[node name="Master" type="Node" node_paths=PackedStringArray("BackupPaste", "BackupLoad", "EntryPanel", "EntryId", "EntryPassword", "EntryRoot")]
 script = ExtResource("1_qgy8t")
-LoginPassword = NodePath("Control/Login/LineEdit")
-LoginButton = NodePath("Control/Login/Button")
-SetupPassword = NodePath("Control/FirstPassword/HBoxContainer/LineEdit")
-SetupHideButton = NodePath("Control/FirstPassword/HBoxContainer/Hide")
-SetupPasswordConfirm = NodePath("Control/FirstPassword/Confirm")
-SetupButton = NodePath("Control/FirstPassword/Button")
 BackupPaste = NodePath("Control/MarginContainer/Unlocked/Input/Backup Paste")
 BackupLoad = NodePath("Control/MarginContainer/Unlocked/Input/Backup Load")
 EntryPanel = NodePath("Control/MarginContainer")
 EntryId = NodePath("Control/MarginContainer/Unlocked/Input/id")
 EntryPassword = NodePath("Control/MarginContainer/Unlocked/Input/password")
-EntryAddButton = NodePath("Control/MarginContainer/Unlocked/Input/Add")
 EntryRoot = NodePath("Control/MarginContainer/Unlocked/PanelContainer/Root")
 EntryPrefab = ExtResource("1_xmw1a")
 
@@ -39,7 +35,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.113725, 0.133333, 0.160784, 1)
 
-[node name="Login" type="VBoxContainer" parent="Control"]
+[node name="Login" type="VBoxContainer" parent="Control" node_paths=PackedStringArray("File", "Key", "Password", "OpenButton", "NewPassword", "ConfirmPassword", "CreateButton", "Feedback")]
 layout_mode = 1
 anchors_preset = 13
 anchor_left = 0.5
@@ -50,55 +46,90 @@ offset_right = 33.5
 grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
+script = ExtResource("3_m7jmp")
+File = NodePath("File")
+Key = NodePath("Key")
+Password = NodePath("OpenPassword")
+OpenButton = NodePath("Unlock")
+NewPassword = NodePath("NewPassword")
+ConfirmPassword = NodePath("Confirm")
+CreateButton = NodePath("Create")
+Feedback = NodePath("Feedback")
 
-[node name="LineEdit" type="LineEdit" parent="Control/Login"]
-custom_minimum_size = Vector2(256, 0)
+[node name="RichTextLabel2" type="RichTextLabel" parent="Control/Login"]
 layout_mode = 2
-placeholder_text = "Enter password"
-secret = true
+bbcode_enabled = true
+text = "[center][b]Open File"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
 
-[node name="Button" type="Button" parent="Control/Login"]
+[node name="File" parent="Control/Login" instance=ExtResource("3_3253y")]
 layout_mode = 2
-size_flags_vertical = 4
-text = "🔓 unlock"
+SingleFile = true
+FileNameFormat = "🗃️ {path}"
+PlaceholderText = "<no_file_selected>"
 
-[node name="FirstPassword" type="VBoxContainer" parent="Control"]
-layout_mode = 1
-anchors_preset = 13
-anchor_left = 0.5
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -33.5
-offset_right = 33.5
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
+[node name="Key" parent="Control/Login" instance=ExtResource("3_3253y")]
+layout_mode = 2
+SingleFile = true
+FileNameFormat = "🗝️ {path}"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Control/FirstPassword"]
+[node name="OpenPassword" parent="Control/Login" instance=ExtResource("5_y2354")]
 layout_mode = 2
 
-[node name="LineEdit" type="LineEdit" parent="Control/FirstPassword/HBoxContainer"]
-custom_minimum_size = Vector2(256, 0)
-layout_mode = 2
-placeholder_text = "Enter password"
-secret = true
-
-[node name="Hide" type="Button" parent="Control/FirstPassword/HBoxContainer"]
-layout_mode = 2
-text = "🦉"
-
-[node name="Confirm" type="LineEdit" parent="Control/FirstPassword"]
-custom_minimum_size = Vector2(256, 0)
-layout_mode = 2
-placeholder_text = "Confirm password"
-secret = true
-
-[node name="Button" type="Button" parent="Control/FirstPassword"]
+[node name="Unlock" type="Button" parent="Control/Login"]
 layout_mode = 2
 size_flags_vertical = 4
-text = "🔒 Setup (DO NOT FORGET)"
+text = "🌊 Unlock"
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Control/Login"]
+layout_mode = 2
+bbcode_enabled = true
+text = "
+"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="Feedback" type="RichTextLabel" parent="Control/Login"]
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="RichTextLabel5" type="RichTextLabel" parent="Control/Login"]
+layout_mode = 2
+bbcode_enabled = true
+text = "
+"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="RichTextLabel3" type="RichTextLabel" parent="Control/Login"]
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][b]Create new File"
+fit_content = true
+scroll_active = false
+autowrap_mode = 0
+
+[node name="NewPassword" parent="Control/Login" instance=ExtResource("5_y2354")]
+layout_mode = 2
+
+[node name="Confirm" parent="Control/Login" instance=ExtResource("5_y2354")]
+layout_mode = 2
+PlaceholderText = "Confirm password"
+
+[node name="Create" type="Button" parent="Control/Login"]
+layout_mode = 2
+size_flags_vertical = 4
+text = "🎣 Create"
 
 [node name="MarginContainer" type="MarginContainer" parent="Control"]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -375,3 +406,9 @@ Password = NodePath("../HBoxContainer2/password")
 CopyButton = NodePath("../HBoxContainer2/Copy")
 HideButton = NodePath("../HBoxContainer2/Hide")
 DeleteButton = NodePath("../HBoxContainer2/Delete")
+
+[connection signal="pressed" from="Control/Login/Unlock" to="Control/Login" method="Open"]
+[connection signal="pressed" from="Control/Login/Create" to="Control/Login" method="Create"]
+[connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Backup Load" to="." method="OnBackupLoad"]
+[connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Backup Paste" to="." method="OnBackupPaste"]
+[connection signal="pressed" from="Control/MarginContainer/Unlocked/Input/Add" to="." method="OnAddEntry"]

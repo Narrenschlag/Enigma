@@ -1,239 +1,218 @@
-namespace Passwords
+namespace Enigma;
+
+using System.Collections.Generic;
+using Cutulu.Encryption;
+using Cutulu.Core;
+using Godot;
+
+public partial class Master : Node
 {
-    using Cutulu.Core;
-    using System;
-    using Godot;
+    [ExportGroup("Entries")]
+    [Export] public Button BackupPaste;
+    [Export] public Button BackupLoad;
+    [Export] public Control EntryPanel;
+    [Export] public LineEdit EntryId;
+    [Export] public LineEdit EntryPassword;
+    [Export] public Node EntryRoot;
+    [Export] public PackedScene EntryPrefab;
 
-    public partial class Master : Node
+    private static byte[] ENCRYPTED_KEY { get; set; }
+    private static byte[] HIDDEN_KEY { get; set; }
+
+    public static string LOADED_FILE_PATH { get; set; }
+    private static Master Singleton { get; set; }
+
+    public static Entries Entries { get; set; }
+
+    public override void _EnterTree()
     {
-        [ExportGroup("Login")]
-        [Export] public LineEdit LoginPassword;
-        [Export] public Button LoginButton;
-
-        [ExportGroup("Setup")]
-        [Export] public LineEdit SetupPassword;
-        [Export] public Button SetupHideButton;
-        [Export] public LineEdit SetupPasswordConfirm;
-        [Export] public Button SetupButton;
-
-        [ExportGroup("Entries")]
-        [Export] public Button BackupPaste;
-        [Export] public Button BackupLoad;
-        [Export] public Node EntryPanel;
-        [Export] public LineEdit EntryId;
-        [Export] public LineEdit EntryPassword;
-        [Export] public Button EntryAddButton;
-        [Export] public Node EntryRoot;
-        [Export] public PackedScene EntryPrefab;
-
-        public const string PasswordPath = $"{CONST.USER_PATH}sesam.key";
-        public const string FilePath = $"{CONST.USER_PATH}sesam.file";
-
-        public static Entries Entries { get; set; }
-        private static Master Singleton;
-
-        public override void _Ready()
-        {
-            Singleton = this;
-
-            // Login
-            if (PasswordPath.PathExists())
-            {
-                LoginButton.Connect("pressed", new Callable(this, "OnLogin"));
-
-                Enable(1);
-                LoginPassword.GrabFocus();
-            }
-
-            // Setup
-            else
-            {
-                SetupHideButton.Connect("pressed", new(this, "OnSetupHide"));
-                SetupButton.Connect("pressed", new(this, "OnSetup"));
-
-                Enable(0);
-                SetupPassword.GrabFocus();
-            }
-        }
-
-        private void Enable(byte mode)
-        {
-            SetupButton.GetParent().SetActive(mode == 0);
-            LoginButton.GetParent().SetActive(mode == 1);
-            EntryPanel.SetActive(mode == 2);
-        }
-
-        private void OnLogin()
-        {
-            try
-            {
-                Password.RawPassword = LoginPassword.Text.Trim();
-
-                Entries = Entries.Read(LoginPassword.Text.Trim());
-                OnUnlock();
-            }
-
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.Message);
-            }
-        }
-
-        private void OnSetup()
-        {
-            try
-            {
-                if (SetupPassword.Text.Trim().Equals(SetupPasswordConfirm.Text.Trim()) == false)
-                {
-                    throw new("Passwords are not matching");
-                }
-
-                Password.RawPassword = SetupPassword.Text.Trim();
-                Password.Set(SetupPassword.Text.Trim());
-
-                Entries = new();
-                Entries.Write();
-
-                OnUnlock();
-            }
-
-            catch (Exception ex)
-            {
-                Debug.LogError(ex.Message);
-            }
-        }
-
-        private void OnSetupHide() => SetupPassword.Secret = !SetupPassword.Secret;
-
-        private void OnAddEntry()
-        {
-            string password = EntryPassword.Text.Trim();
-            string id = EntryId.Text.Trim();
-
-            if (id.IsEmpty() || password.IsEmpty()) return;
-
-            Entries.EntryIndex = Entries.EntryIndex.AddToArray(new(id, password));
-            EntryPassword.Text = "";
-            EntryId.Text = "";
-
-            Entries.Write();
-            UpdateEntries();
-        }
-
-        private void OnUnlock()
-        {
-            EntryAddButton.Connect("pressed", new(this, "OnAddEntry"));
-            BackupPaste.Connect("pressed", new(this, "OnBackupPaste"));
-            BackupLoad.Connect("pressed", new(this, "OnBackupLoad"));
-
-            UpdateEntries();
-        }
-
-        public static void UpdateEntries()
-        {
-            Singleton.Enable(2);
-
-            Singleton.EntryRoot.Clear();
-            for (ushort i = 0; i < Entries.EntryIndex.Length; i++)
-            {
-                var entry = Singleton.EntryPrefab.Instantiate<Entry>(Singleton.EntryRoot);
-                entry.OnSetup(i, ref Entries.EntryIndex[i]);
-            }
-        }
-
-        private void OnBackupPaste() => Entries.PasteBackup();
-        private void OnBackupLoad() => Entries.CopyBackup();
+        Singleton = this;
     }
 
-    public static class Password
+    public override void _Process(double delta)
     {
-        private static string hashedPassword;
-
-        public static string RawPassword { private get; set; }
-        private static string HashedPassword
+        if (EntryId.HasFocus() || EntryPassword.HasFocus())
         {
-            set => hashedPassword = value;
-            get => hashedPassword.IsEmpty() ? hashedPassword = new File(Master.PasswordPath).Read().TryDecode(out string hp) ? hp : default : hashedPassword;
+            if (Input.IsActionJustPressed("submit")) OnAddEntry();
         }
 
-        public static void Set(string rawPassword) => new File(Master.PasswordPath).Write((HashedPassword = rawPassword.HashPassword()).Encode());
-        public static bool Check(string rawPassword) => HashedPassword.Equals(rawPassword.HashPassword());
+        if (Input.IsActionJustPressed("hide"))
+        {
+            var entries = EntryRoot.GetNodesInChildren<Entry>();
 
-        public static string Encrypt(string input) => input.EncryptString(RawPassword, 3).EncryptString(RawPassword);
-        public static string Decrypt(string input) => input.DecryptString(RawPassword).DecryptString(RawPassword, 3);
+            if (entries.NotNull())
+                foreach (var entry in entries)
+                    entry.HideEntry();
+        }
     }
 
-    public class Entries
+    private static byte[] FixPassword(string password)
     {
-        public Entry[] EntryIndex { get; set; }
+        var buffer = new List<byte>(password.Encode());
 
-        public Entries() => EntryIndex = new Entry[1] { new("sampleId", "samplePassword") };
-        private Entries(int length) => EntryIndex = new Entry[length];
+        var random = Noisef.GenerateNoise(buffer.ToArray().Decode<int>(), default);
+        var steps = random.Value(buffer[^1]);
+        byte step = 0;
 
-        /// <summary>
-        /// Read entries from file system
-        /// </summary>
-        public static Entries Read(string rawPassword)
+        while (buffer.Count < SmartEncryption.KeySize)
         {
-            if (Password.Check(rawPassword))
-            {
-                try
-                {
-                    var encrypted = new File(Master.FilePath).ReadString();
-                    var decrypted = Password.Decrypt(encrypted);
+            var val = random.Value(
+                buffer[(++step + buffer[^2]) % buffer.Count] * 603.7f,
+                buffer[(++step + buffer[3]) % buffer.Count] * 0.2f,
+                buffer[(++step + buffer[^3]) % buffer.Count] * Mathf.Pi
+            );
 
-                    return decrypted.json<Entries>();
-                }
-                catch
-                {
-                    throw new("No file found");
-                }
-            }
+            if ((steps += steps * random.Value(++step)) % 2 == 0)
+                val *= random.Value(steps);
 
-            else throw new("Password is not matching");
+            if (buffer[++step % buffer.Count] % 2.0f == 0) buffer.Insert(Mathf.RoundToInt(steps * 10) % (buffer.Count - 4), (byte)Mathf.RoundToInt(val * 255));
+            else buffer.Add((byte)Mathf.RoundToInt(val * 255));
         }
 
-        /// <summary>
-        /// Write entries to file system
-        /// </summary>
-        public void Write()
+        return [.. buffer];
+    }
+
+    public static bool LoadKey(File file, string password)
+    {
+        if (file.IsNull() || file.Exists() == false || password.IsEmpty()) return false;
+
+        ENCRYPTED_KEY = file.Read();
+
+        try
         {
-            string json = this.json();
-
-            string encrypted = Password.Encrypt(json);
-
-            new File(Master.FilePath).WriteString(encrypted);
+            var priv = ENCRYPTED_KEY.Decrypt(HIDDEN_KEY = FixPassword(password));
         }
 
-        public void CopyBackup() => Application.Clipboard = EntryIndex.json();
-
-        public void PasteBackup()
+        catch
         {
-            var paste = Application.Clipboard.json<Entry[]>();
-            if (paste == null) return;
-
-            var backup = EntryIndex;
-            EntryIndex = new Entry[backup.Length + paste.Length];
-
-            for (int i = 0; i < EntryIndex.Length; i++)
-            {
-                EntryIndex[i] = i >= backup.Length ? paste[i - backup.Length] : backup[i];
-            }
-
-            Write();
-            Master.UpdateEntries();
+            return false;
         }
 
-        public struct Entry
-        {
-            public string Id { get; set; }
-            public string Password { get; set; }
+        return true;
+    }
 
-            public Entry(string id, string password)
-            {
-                Id = id;
-                Password = password;
-            }
+    public static bool WriteKey(string path, byte[] privateKey, string password)
+    {
+        if (privateKey.IsEmpty()) return false;
+
+        new File(path).Write(ENCRYPTED_KEY = privateKey.Encrypt(FixPassword(password)));
+        return LoadKey(new File(path), password);
+    }
+
+    public static bool UnlockEntries(File file)
+    {
+        if (file.IsNull() || file.Exists() == false) return false;
+
+        var entries = Entries.Read(file, HIDDEN_KEY);
+        if (entries.IsNull()) return false;
+        else return OpenEntries(entries, file.SystemPath);
+    }
+
+    public static bool OpenEntries(Entries entries, string filePath)
+    {
+        if (entries.IsNull()) return false;
+
+        LOADED_FILE_PATH = filePath;
+        Entries = entries;
+
+        Singleton.EntryPanel.Visible = true;
+        UpdateEntries();
+        return true;
+    }
+
+    private void OnAddEntry()
+    {
+        string password = EntryPassword.Text.Trim();
+        string id = EntryId.Text.Trim();
+
+        if (id.IsEmpty() || password.IsEmpty()) return;
+
+        Entries.EntryIndex = Entries.EntryIndex.AddToArray(new(id, password));
+        EntryPassword.Text = "";
+        EntryId.Text = "";
+
+        Save();
+        UpdateEntries();
+    }
+
+    public static void Save()
+    {
+        Entries.Write(HIDDEN_KEY);
+    }
+
+    public static void UpdateEntries()
+    {
+        Singleton.EntryRoot.Clear();
+
+        for (ushort i = 0; i < Entries.EntryIndex.Length; i++)
+        {
+            var entry = Singleton.EntryPrefab.Instantiate<Entry>(Singleton.EntryRoot);
+            entry.OnSetup(i, ref Entries.EntryIndex[i]);
         }
+    }
+
+    private void OnBackupPaste() => Entries.PasteBackup();
+    private void OnBackupLoad() => Entries.CopyBackup();
+}
+
+public class Entries
+{
+    public Entry[] EntryIndex { get; set; }
+
+    public Entries() => EntryIndex = [new("sampleId", "samplePassword")];
+
+    /// <summary>
+    /// Read entries from file system
+    /// </summary>
+    public static Entries Read(File file, byte[] key)
+    {
+        try
+        {
+            return file.Read()
+                .Decrypt(key)
+                .Decode<Entries>();
+        }
+
+        catch
+        {
+            Debug.LogError("No file found");
+
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Write entries to file system
+    /// </summary>
+    public void Write(byte[] key)
+    {
+        new File(Master.LOADED_FILE_PATH).Write(this.Encode().Encrypt(key));
+    }
+
+    public void CopyBackup() => Application.Clipboard = EntryIndex.json();
+
+    public void PasteBackup()
+    {
+        var paste = Application.Clipboard.json<Entry[]>();
+        if (paste == null) return;
+
+        var backup = EntryIndex;
+        EntryIndex = new Entry[backup.Length + paste.Length];
+
+        for (int i = 0; i < EntryIndex.Length; i++)
+        {
+            EntryIndex[i] = i >= backup.Length ? paste[i - backup.Length] : backup[i];
+        }
+
+        Master.UpdateEntries();
+        Master.Save();
+    }
+
+    public struct Entry(string id, string password)
+    {
+        public Entry() : this(string.Empty, string.Empty) { }
+
+        public string Id { get; set; } = id;
+        public string Password { get; set; } = password;
     }
 }

@@ -1,0 +1,19 @@
+[gd_scene load_steps=2 format=3 uid="uid://d2in5sq8vysyq"]
+
+[ext_resource type="Script" uid="uid://0x6f8rw8o34v" path="res://Scripts/HiddenInput.cs" id="1_44tgu"]
+
+[node name="HiddenInput" type="HBoxContainer" node_paths=PackedStringArray("Edit", "HideButton")]
+script = ExtResource("1_44tgu")
+Edit = NodePath("LineEdit")
+HideButton = NodePath("Hide")
+
+[node name="LineEdit" type="LineEdit" parent="."]
+custom_minimum_size = Vector2(256, 0)
+layout_mode = 2
+placeholder_text = "Enter password"
+alignment = 1
+secret = true
+
+[node name="Hide" type="Button" parent="."]
+layout_mode = 2
+text = "🦉"
